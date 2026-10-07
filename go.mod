@@ -1,4 +1,4 @@
-module beid
+module github.com/be-go/beid
 
 go 1.27.1
 

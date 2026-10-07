@@ -1,21 +1,26 @@
 package main
 
 import (
+	"context"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	GlobalInit()
 	gin.SetMode(gin.DebugMode)
-	server := gin.Default()
 
-	server.GET("/test", func(c *gin.Context) {
+	server, err := NewServer(context.Background())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	server.router.GET("/test", func(c *gin.Context) {
 		status := http.StatusOK
 		data := make(map[string]any)
 
-		if err := gDatabase.Pool.Ping(c.Request.Context()); err != nil {
+		if err := server.db.Ping(c.Request.Context()); err != nil {
 			data["db"] = "down"
 			data["db_error"] = err.Error()
 			status = http.StatusServiceUnavailable
@@ -28,5 +33,5 @@ func main() {
 	})
 
 	server.Run(":8080")
-	GlobalQuit()
+	server.Close()
 }

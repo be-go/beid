@@ -4,27 +4,23 @@ import (
 	"context"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// DB 封装数据库连接池及其配置
-type DB struct {
-	Config *pgxpool.Config
-	Pool   *pgxpool.Pool
+type Server struct {
+	router *gin.Engine
+	db     *pgxpool.Pool
 }
 
-// Close DB
-func (db *DB) Close() {
-	if db.Pool != nil {
-		db.Pool.Close()
-	}
-}
-
-// Open DB
-func OpenDB(ctx context.Context, dsn string) (*DB, error) {
+func NewServer(ctx context.Context) (*Server, error) {
 	var err error
 
+	// Init gin router
+	router := gin.Default()
+
 	// Parse DSH params
+	dsn := "postgres://user:password@localhost:5432/beid?sslmode=disable"
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, err
@@ -57,5 +53,16 @@ func OpenDB(ctx context.Context, dsn string) (*DB, error) {
 		return nil, err
 	}
 
-	return &DB{Config: config, Pool: pool}, nil
+	return &Server{router: router, db: pool}, nil
+}
+
+func (svr *Server) Run(addr ...string) error {
+	err := svr.router.Run(addr...)
+	return err
+}
+
+func (svr *Server) Close() {
+	if svr.db != nil {
+		svr.db.Close()
+	}
 }

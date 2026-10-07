@@ -13,37 +13,49 @@ type DB struct {
 	Pool   *pgxpool.Pool
 }
 
-// NewDB 解析 DSN、创建连接池并验证连通性。
-// 注意:NewWithConfig 本身是懒加载的(不会立即建连),这里通过 Ping 主动验证一次。
-func NewDB(ctx context.Context, dsn string) (*DB, error) {
+// Close DB
+func (db *DB) Close() {
+	if db.Pool != nil {
+		db.Pool.Close()
+	}
+}
+
+// Open DB
+func OpenDB(ctx context.Context, dsn string) (*DB, error) {
+	var err error
+
+	// Parse DSH params
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	// 连接池参数,可按需调整
-	config.MaxConns = 10
+	// Other pool configs
+	config.MaxConns = 20
 	config.MinConns = 2
 	config.MaxConnLifetime = time.Hour
-	config.MaxConnIdleTime = 30 * time.Minute
+	config.MaxConnIdleTime = time.Minute * 30
 	config.HealthCheckPeriod = time.Minute
 
+	// [NOTICE] conn from pool is lazy connect
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := pool.Ping(ctx); err != nil {
+	// To connect once by Ping
+	err = pool.Ping(ctx)
+	if err != nil {
+		pool.Close()
+		return nil, err
+	}
+
+	// Init table "users" from script "users_init.sql", which requires idempotent
+	_, err = pool.Exec(ctx, UsersInitSql)
+	if err != nil {
 		pool.Close()
 		return nil, err
 	}
 
 	return &DB{Config: config, Pool: pool}, nil
-}
-
-// Close 关闭连接池,释放所有连接
-func (db *DB) Close() {
-	if db.Pool != nil {
-		db.Pool.Close()
-	}
 }

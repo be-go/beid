@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -16,7 +15,7 @@ import (
 func main() {
 	server, err := NewServer(context.Background())
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("[Server] [FATAL] %v\n", err)
 	}
 
 	server.router.GET("/test", func(c *gin.Context) {
@@ -123,9 +122,5 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"id": id})
 	})
 
-	addr := fmt.Sprintf("%s:%d", server.cfg.Server.IP, server.cfg.Server.Port)
-	log.Printf("server running in '%s'\n", addr)
-
-	server.Run(addr)
-	server.Close()
+	server.Run()
 }

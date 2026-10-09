@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,9 +11,11 @@ import (
 )
 
 type Server struct {
-	db     *pgxpool.Pool // pgx pool
+	ip     string        // server ip
+	port   int           // server port
+	cfg    *Config       // server's config
 	router *gin.Engine   // gin router
-	cfg    *Config       // server config
+	db     *pgxpool.Pool // pgx pool
 }
 
 func NewServer(ctx context.Context) (*Server, error) {
@@ -28,45 +31,51 @@ func NewServer(ctx context.Context) (*Server, error) {
 	gin.SetMode(cfg.Gin.Mode)
 	router := gin.Default()
 
-	// Parse DSN params
+	// Init pgx pool
 	pgconfig, err := pgxpool.ParseConfig(cfg.Postgres.DSN)
 	if err != nil {
 		return nil, err
 	}
-
-	// Other pool configs
 	pgconfig.MaxConns = 20
 	pgconfig.MinConns = 2
 	pgconfig.MaxConnLifetime = time.Hour
 	pgconfig.MaxConnIdleTime = time.Minute * 30
 	pgconfig.HealthCheckPeriod = time.Minute
 
-	// [NOTICE] conn from pool is lazy connect
 	pool, err := pgxpool.NewWithConfig(ctx, pgconfig)
 	if err != nil {
 		return nil, err
 	}
 
-	// To connect once by Ping
 	err = pool.Ping(ctx)
 	if err != nil {
 		pool.Close()
 		return nil, err
 	}
 
-	// Init table "users" from script "users_init.sql", which requires idempotent
+	// Init db from scripts, which requires idempotent
 	_, err = pool.Exec(ctx, kUsersInitSql)
 	if err != nil {
 		pool.Close()
 		return nil, err
 	}
 
-	return &Server{db: pool, router: router, cfg: cfg}, nil
+	// Construct and Return
+	return &Server{
+		cfg:    cfg,
+		ip:     cfg.Server.IP,
+		port:   cfg.Server.Port,
+		router: router,
+		db:     pool,
+	}, nil
 }
 
-func (svr *Server) Run(addr ...string) error {
-	err := svr.router.Run(addr...)
-	return err
+func (svr *Server) Run() error {
+	addr := fmt.Sprintf("%s:%d", svr.ip, svr.port)
+	log.Printf("[Server] [INFO] server running at '%s'.\n", addr)
+
+	defer svr.Close()
+	return svr.router.Run(addr)
 }
 
 func (svr *Server) Close() {

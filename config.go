@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sync"
 )
 
 // This is config's path
@@ -33,31 +32,20 @@ type PostgresConfig struct {
 	DSN string `json:"dsn"`
 }
 
-// Config result cache
-var (
-	configValue *Config
-	configError error
-	configOnce  sync.Once
-)
-
 // LoadConfig reads kConfigPath into Config once and caches the result; later
 // calls return the same value and error.
 func LoadConfig() (*Config, error) {
-	configOnce.Do(func() {
-		raw, err := os.ReadFile(kConfigPath)
-		if err != nil {
-			configError = fmt.Errorf("read %s: %w", kConfigPath, err)
-			return
-		}
+	raw, err := os.ReadFile(kConfigPath)
+	if err != nil {
+		err = fmt.Errorf("read %s: %w", kConfigPath, err)
+		return nil, err
+	}
 
-		var cfg Config
-		if err := json.Unmarshal(raw, &cfg); err != nil {
-			configError = fmt.Errorf("parse %s: %w", kConfigPath, err)
-			return
-		}
-
-		configValue = &cfg
-	})
-
-	return configValue, configError
+	var cfg Config
+	err = json.Unmarshal(raw, &cfg)
+	if err != nil {
+		err = fmt.Errorf("parse %s: %w", kConfigPath, err)
+		return nil, err
+	}
+	return &cfg, err
 }

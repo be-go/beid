@@ -6,9 +6,6 @@ import (
 	"os"
 )
 
-// This is config's path
-const kConfigPath = "config.json"
-
 // Config is the root configuration, bound from config.json.
 type Config struct {
 	Gin      GinConfig      `json:"gin"`
@@ -32,19 +29,18 @@ type PostgresConfig struct {
 	DSN string `json:"dsn"`
 }
 
-// LoadConfig reads kConfigPath into Config once and caches the result; later
-// calls return the same value and error.
-func LoadConfig() (*Config, error) {
-	raw, err := os.ReadFile(kConfigPath)
+// LoadConfig from config file
+func LoadConfigFrom(path string) (*Config, error) {
+	raw, err := os.ReadFile(path)
 	if err != nil {
-		err = fmt.Errorf("read %s: %w", kConfigPath, err)
+		err = fmt.Errorf("read %s: %w", path, err)
 		return nil, err
 	}
 
 	var cfg Config
 	err = json.Unmarshal(raw, &cfg)
 	if err != nil {
-		err = fmt.Errorf("parse %s: %w", kConfigPath, err)
+		err = fmt.Errorf("parse %s: %w", path, err)
 		return nil, err
 	}
 	return &cfg, err

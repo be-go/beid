@@ -22,7 +22,7 @@ func NewServer(ctx context.Context) (*Server, error) {
 	var err error
 
 	// Load config
-	cfg, err := LoadConfig()
+	cfg, err := LoadConfigFrom("config.json")
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
 	}

@@ -31,6 +31,9 @@ go.work.sum
 # env file
 .env
 
+# local config with secrets, copy from config.example.json
+/config.json
+
 # Editor/IDE
 # .idea/
 # .vscode/

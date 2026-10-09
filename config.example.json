@@ -1,6 +1,6 @@
 {
   "gin": {
-    "mode": "debug"
+    "mode": "release"
   },
   "server": {
     "ip": "localhost",

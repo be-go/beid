@@ -32,7 +32,7 @@ func main() {
 	})
 
 	addr := fmt.Sprintf("%s:%d", server.cfg.Server.IP, server.cfg.Server.Port)
-	log.Printf("server running in '%s'", addr)
+	log.Printf("server running in '%s'\n", addr)
 
 	server.Run(addr)
 	server.Close()

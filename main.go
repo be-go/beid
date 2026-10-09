@@ -10,8 +10,6 @@ import (
 )
 
 func main() {
-	gin.SetMode(gin.DebugMode)
-
 	server, err := NewServer(context.Background())
 	if err != nil {
 		log.Fatalln(err)

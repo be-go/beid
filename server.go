@@ -18,14 +18,15 @@ type Server struct {
 func NewServer(ctx context.Context) (*Server, error) {
 	var err error
 
-	// Init gin router
-	router := gin.Default()
-
 	// Load config
 	cfg, err := LoadConfig()
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
 	}
+
+	// Init gin router
+	gin.SetMode(cfg.Gin.Mode)
+	router := gin.Default()
 
 	// Parse DSN params
 	pgconfig, err := pgxpool.ParseConfig(cfg.Postgres.DSN)

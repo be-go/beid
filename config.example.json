@@ -1,4 +1,7 @@
 {
+  "gin": {
+    "mode": "debug"
+  },
   "server": {
     "ip": "localhost",
     "port": 8080

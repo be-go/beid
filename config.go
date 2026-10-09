@@ -12,8 +12,14 @@ const kConfigPath = "config.json"
 
 // Config is the root configuration, bound from config.json.
 type Config struct {
+	Gin      GinConfig      `json:"gin"`
 	Server   ServerConfig   `json:"server"`
 	Postgres PostgresConfig `json:"postgres"`
+}
+
+// GinConfig holds the gin settings.
+type GinConfig struct {
+	Mode string `json:"mode"`
 }
 
 // ServerConfig holds the HTTP server settings.

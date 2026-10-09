@@ -8,4 +8,4 @@ Copy the config template and fill in your own values:
 cp config.example.json config.json
 ```
 
-`config.json` holds local secrets and is git-ignored.
+`config.json` is git-ignored.

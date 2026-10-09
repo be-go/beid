@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -9,8 +10,9 @@ import (
 )
 
 type Server struct {
-	router *gin.Engine
-	db     *pgxpool.Pool
+	db     *pgxpool.Pool // pgx pool
+	router *gin.Engine   // gin router
+	cfg    *Config       // server config
 }
 
 func NewServer(ctx context.Context) (*Server, error) {
@@ -19,22 +21,27 @@ func NewServer(ctx context.Context) (*Server, error) {
 	// Init gin router
 	router := gin.Default()
 
-	// Parse DSH params
-	dsn := "postgres://user:password@localhost:5432/beid?sslmode=disable"
-	config, err := pgxpool.ParseConfig(dsn)
+	// Load config
+	cfg, err := LoadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("load config: %w", err)
+	}
+
+	// Parse DSN params
+	pgconfig, err := pgxpool.ParseConfig(cfg.Postgres.DSN)
 	if err != nil {
 		return nil, err
 	}
 
 	// Other pool configs
-	config.MaxConns = 20
-	config.MinConns = 2
-	config.MaxConnLifetime = time.Hour
-	config.MaxConnIdleTime = time.Minute * 30
-	config.HealthCheckPeriod = time.Minute
+	pgconfig.MaxConns = 20
+	pgconfig.MinConns = 2
+	pgconfig.MaxConnLifetime = time.Hour
+	pgconfig.MaxConnIdleTime = time.Minute * 30
+	pgconfig.HealthCheckPeriod = time.Minute
 
 	// [NOTICE] conn from pool is lazy connect
-	pool, err := pgxpool.NewWithConfig(ctx, config)
+	pool, err := pgxpool.NewWithConfig(ctx, pgconfig)
 	if err != nil {
 		return nil, err
 	}
@@ -47,13 +54,13 @@ func NewServer(ctx context.Context) (*Server, error) {
 	}
 
 	// Init table "users" from script "users_init.sql", which requires idempotent
-	_, err = pool.Exec(ctx, UsersInitSql)
+	_, err = pool.Exec(ctx, kUsersInitSql)
 	if err != nil {
 		pool.Close()
 		return nil, err
 	}
 
-	return &Server{router: router, db: pool}, nil
+	return &Server{db: pool, router: router, cfg: cfg}, nil
 }
 
 func (svr *Server) Run(addr ...string) error {

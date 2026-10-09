@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -32,6 +33,9 @@ func main() {
 		c.JSON(status, data)
 	})
 
-	server.Run(":8080")
+	addr := fmt.Sprintf("%s:%d", server.cfg.Server.IP, server.cfg.Server.Port)
+	log.Printf("server running in '%s'", addr)
+
+	server.Run(addr)
 	server.Close()
 }

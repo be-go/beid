@@ -1,5 +1,9 @@
 {
-  "server.ip": "localhost",
-  "server.port": 8080,
-  "postgres.dsn": "postgres://user:password@localhost:5432/beid?sslmode=disable"
+  "server": {
+    "ip": "localhost",
+    "port": 8080
+  },
+  "postgres": {
+    "dsn": "postgres://user:password@localhost:5432/beid?sslmode=disable"
+  }
 }

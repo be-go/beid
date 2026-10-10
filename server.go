@@ -72,7 +72,7 @@ func NewServer(ctx context.Context) (*Server, error) {
 
 func (svr *Server) Run() error {
 	addr := fmt.Sprintf("%s:%d", svr.ip, svr.port)
-	log.Printf("[Server] [INFO] server running at '%s'.\n", addr)
+	log.Printf("[Server] [Info] server running at '%s'.\n", addr)
 
 	defer svr.Close()
 	return svr.router.Run(addr)

@@ -8,7 +8,7 @@ import (
 func main() {
 	server, err := NewServer(context.Background())
 	if err != nil {
-		log.Fatalf("[Server] [FATAL] %v\n", err)
+		log.Fatalf("[Server] [Fatal] %v\n", err)
 	}
 
 	server.router.GET("/test", handle_get_test(server))

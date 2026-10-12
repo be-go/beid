@@ -47,7 +47,7 @@ func test_router(s *Server) {
 		// }
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		ss, err := token.SignedString(kHS256Secret)
+		ss, err := token.SignedString("kHS256Secret")
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -61,7 +61,7 @@ func test_router(s *Server) {
 		tokenString := c.Query("tok")
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-			return kHS256Secret, nil
+			return "kHS256Secret", nil
 		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 		if err != nil {

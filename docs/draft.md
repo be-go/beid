@@ -1,16 +1,12 @@
 # user
 
-/user/register
+/users/register
 
-/user/login
+/auth/login
+/auth/verify
+/auth/refresh
 
-/user/verify
-
-/user/refresh
-
-# status
-
-/status/snapshot
+/user/:name/*action
 
 
 

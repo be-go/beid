@@ -14,7 +14,6 @@ func test_router(s *Server) {
 
 	// curl http://localhost:8080/jwt-get
 	r.GET("/jwt-get", func(c *gin.Context) {
-		mySigningKey := []byte("AllYourBase")
 
 		type MyCustomClaims struct {
 			Foo string `json:"foo"`
@@ -48,7 +47,7 @@ func test_router(s *Server) {
 		// }
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		ss, err := token.SignedString(mySigningKey)
+		ss, err := token.SignedString(kHS256Secret)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -62,7 +61,7 @@ func test_router(s *Server) {
 		tokenString := c.Query("tok")
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-			return []byte("AllYourBase"), nil
+			return kHS256Secret, nil
 		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
 		if err != nil {

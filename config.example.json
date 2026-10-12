@@ -8,5 +8,8 @@
   },
   "postgres": {
     "dsn": "postgres://user:password@localhost:5432/beid?sslmode=disable"
+  },
+  "jwt": {
+    "secret": "xxxxxxxxxxx"
   }
 }

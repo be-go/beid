@@ -11,6 +11,7 @@ type Config struct {
 	Gin      GinConfig      `json:"gin"`
 	Server   ServerConfig   `json:"server"`
 	Postgres PostgresConfig `json:"postgres"`
+	JWT      JWTConfig      `json:"jwt"`
 }
 
 // GinConfig holds the gin settings.
@@ -27,6 +28,10 @@ type ServerConfig struct {
 // PostgresConfig holds the PostgreSQL connection settings.
 type PostgresConfig struct {
 	DSN string `json:"dsn"`
+}
+
+type JWTConfig struct {
+	Secret string `json:"secret"`
 }
 
 // LoadConfig from config file
